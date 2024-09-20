@@ -1,0 +1,6 @@
+User-agent: *
+Disallow: /private/
+
+Allow: /
+
+Sitemap: https://is2soccer.github.io/sitemap.xml
