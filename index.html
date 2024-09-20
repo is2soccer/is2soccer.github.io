@@ -1,1 +1,498 @@
-"Hello World" 
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>입찰가격 계산기</title>
+    <!-- Chart.js 및 Annotation 플러그인 로딩 -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@1.3.0"></script>
+    <!-- Google Fonts 및 스타일 추가 -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333333;
+        }
+        .input-group {
+            margin-bottom: 20px;
+        }
+        .input-group label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #555555;
+        }
+        .input-group input[type="number"],
+        .input-group input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #cccccc;
+            border-radius: 4px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        .input-group input[type="radio"] {
+            margin-right: 5px;
+        }
+        .input-group.radio-group {
+            display: flex;
+            align-items: center;
+        }
+        .input-group.radio-group label {
+            margin-right: 15px;
+            font-weight: normal;
+        }
+        #result {
+            font-size: 1.5em;
+            margin-top: 30px;
+            text-align: center;
+            color: #333333;
+        }
+        canvas {
+            max-width: 100%;
+            margin-top: 30px;
+        }
+        #priceLabel {
+            text-align: center;
+            margin-top: 10px;
+            font-weight: bold;
+            color: #555555;
+        }
+        #pPercentageSlider {
+            width: 100%;
+        }
+        .description {
+            margin-top: 40px;
+            background-color: #fafafa;
+            padding: 20px;
+            border-radius: 4px;
+            color: #333333;
+        }
+        .error-message {
+            color: red;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+        /* 추가 내용 스타일 */
+        .additional-content {
+            margin-top: 50px;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 8px;
+        }
+        .additional-content h2 {
+            color: #333333;
+        }
+        .additional-content p {
+            color: #555555;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>입찰가격 계산기</h1>
+        <div class="input-group">
+            <label for="gValue">기초가격: <span id="gError" class="error-message"></span></label>
+            <input type="text" id="gValue" value="1,000,000" placeholder="기초가격을 입력하세요">
+        </div>
+        <div class="input-group">
+            <label for="aValue">A 값: <span id="aError" class="error-message"></span></label>
+            <input type="text" id="aValue" value="500,000" placeholder="A 값을 입력하세요">
+        </div>
+        <div class="input-group radio-group">
+            <label>기관 선택:</label>
+            <input type="radio" id="mois" name="agency" value="mois" checked>
+            <label for="mois">행정자치부</label>
+            <input type="radio" id="pps" name="agency" value="pps">
+            <label for="pps">조달청</label>
+        </div>
+        <div class="input-group">
+            <label for="pPercentageInput">예정가격 변동 (%): <span id="pError" class="error-message"></span></label>
+            <input type="number" id="pPercentageInput" step="0.001" value="0" placeholder="예정가격 변동 비율을 입력하세요">
+        </div>
+        <div class="input-group">
+            <label id="priceLabel">예정가격 변동 조정:</label>
+            <input type="range" id="pPercentageSlider" step="0.001" value="0">
+        </div>
+        <div class="input-group">
+            <canvas id="myChart"></canvas>
+        </div>
+        <div id="result">입찰가격: <span id="bValue"></span></div>
+        <div class="description" id="bidDescription"></div>
+    </div>
+
+    <!-- 추가 내용 -->
+    <div class="additional-content">
+        <!-- 여기에 추가적인 입찰 전략 내용 삽입 -->
+        <!-- 사용자께서 제공하신 내용을 직접 삽입합니다. -->
+        <!-- 아래에 전체 내용을 넣었습니다. -->
+        <h2>입찰가격 선정 전략: 행정자치부와 조달청 기준을 바탕으로</h2>
+        <p>입찰 과정에서 <strong>예정가격</strong>과 <strong>낙찰 하한율</strong>은 입찰 성공에 매우 중요한 요소입니다. 특히, <strong>행정자치부</strong>와 <strong>조달청</strong>의 입찰 기준은 각각 다르게 정의되어 있기 때문에, 각 기준에 맞는 전략을 세우는 것이 필수적입니다. 이 글에서는 두 기관의 입찰 기준을 바탕으로 <strong>가장 낙찰 확률이 높은 입찰가격을 계산하는 방법</strong>을 논리적으로 설명하겠습니다.</p>
+        <hr>
+        <h3>1. <strong>행정자치부 기준: 입찰가격 선정 전략</strong></h3>
+        <h4>행정자치부의 복수예비가격 선정 방식</h4>
+        <p>행정자치부의 입찰 기준에 따르면, <strong>기초가격</strong>을 기준으로 15개의 복수예비가격이 <strong>97%에서 103% 사이</strong>에서 랜덤하게 선택됩니다. 이 값들은 두 가지 주요 범위로 나뉩니다:</p>
+        <ul>
+            <li><strong>8개의 값</strong>은 <strong>기초가격 이하(97%~100%)</strong>에서 선택됩니다.</li>
+            <li><strong>7개의 값</strong>은 <strong>기초가격 이상(100%~103%)</strong>에서 선택됩니다.</li>
+        </ul>
+        <h5>구체적인 구간</h5>
+        <p>행정자치부에서 복수예비가격은 아래와 같은 범위에서 결정됩니다:</p>
+        <ul>
+            <!-- 구간 내용 -->
+            <!-- 각 구간을 리스트로 표시 -->
+            <li><strong>1구간</strong>: 97.000000% ~ 97.375000%</li>
+            <li><strong>2구간</strong>: 97.3750001% ~ 97.750000%</li>
+            <!-- 나머지 구간도 동일하게 추가 -->
+            <!-- ... -->
+            <li><strong>15구간</strong>: 102.57142858% ~ 103.00000000%</li>
+        </ul>
+        <h4>행정자치부의 중간값: 99.75%</h4>
+        <p>행정자치부에서 복수예비가격의 <strong>중앙값</strong>은 15개의 값 중 <strong>8번째 값</strong>이며, 이는 <strong>기초가격의 99.625%에서 100%</strong> 범위에 속합니다. 따라서, 가장 가능성이 높은 <strong>예정가격은 기초가격의 약 99.75%</strong>로 계산됩니다.</p>
+        <h4>낙찰 하한율: 87.745%</h4>
+        <p>행정자치부 입찰에서도 <strong>낙찰 하한율</strong>은 <strong>87.745%</strong>입니다. 이 하한율에 맞춰 입찰가를 설정하면 낙찰 확률을 극대화할 수 있습니다.</p>
+        <h4>공식: 행정자치부 기준 입찰가격 계산</h4>
+        <ol>
+            <li><strong>기초가격</strong>: 입찰 시작 시 제공되는 기준 가격.</li>
+            <li><strong>예정가격</strong>: <strong>기초가격의 99.75%</strong>.
+                \[
+                P = 0.9975 \times \text{기초가격}
+                \]
+            </li>
+            <li><strong>A값</strong>: 모든 업체에 동일하게 주어지는 A값.</li>
+            <li><strong>낙찰 하한율(87.745%)</strong>을 고려한 입찰가격:
+                \[
+                \text{입찰가격} = A + (P - A) \times 0.87745
+                \]
+            </li>
+        </ol>
+        <hr>
+        <h3>2. <strong>조달청 기준: 입찰가격 선정 전략</strong></h3>
+        <h4>조달청의 복수예비가격 선정 방식</h4>
+        <p>조달청의 입찰에서 <strong>복수예비가격</strong>은 <strong>기초가격</strong>을 기준으로 <strong>15개의 값</strong>이 세 가지 주요 구간에서 선택됩니다:</p>
+        <ul>
+            <li><strong>7개의 값</strong>은 <strong>기초가격보다 높은 값(0.134%~2%)</strong> 범위에서 선택됩니다.</li>
+            <li><strong>1개의 값</strong>은 <strong>기초가격 주변(약 -0.133%~0.133%)</strong>에서 선택됩니다.</li>
+            <li><strong>7개의 값</strong>은 <strong>기초가격보다 낮은 값(-0.134%~-2%)</strong> 범위에서 선택됩니다.</li>
+        </ul>
+        <h5>구체적인 구간</h5>
+        <p>조달청의 복수예비가격은 아래와 같은 범위에서 결정됩니다:</p>
+        <ul>
+            <!-- 구간 내용 -->
+            <!-- 각 구간을 리스트로 표시 -->
+            <li><strong>1구간</strong>: 102.000% ~ 101.735%</li>
+            <!-- 나머지 구간도 동일하게 추가 -->
+            <!-- ... -->
+            <li><strong>15구간</strong>: 98.265% ~ 98.000%</li>
+        </ul>
+        <h4>조달청의 중간값: 100%</h4>
+        <p>조달청의 값 분포에서 <strong>8번째 값</strong>은 <strong>기초가격에 근접한 값(100.133% ~ 99.867%)</strong>입니다. 이로 인해, <strong>가장 가능성이 높은 예정가격</strong>은 <strong>기초가격의 100%</strong>입니다.</p>
+        <h4>낙찰 하한율: 87.745%</h4>
+        <p>조달청의 낙찰 하한율도 <strong>87.745%</strong>입니다. 이를 바탕으로 최적의 입찰가를 설정해야 합니다.</p>
+        <h4>공식: 조달청 기준 입찰가격 계산</h4>
+        <ol>
+            <li><strong>기초가격</strong>: 입찰 시작 시 제공되는 기준 가격.</li>
+            <li><strong>예정가격</strong>: <strong>기초가격의 100%</strong>.
+                \[
+                P = \text{기초가격}
+                \]
+            </li>
+            <li><strong>A값</strong>: 모든 업체에 동일하게 주어지는 A값.</li>
+            <li><strong>낙찰 하한율(87.745%)</strong>을 고려한 입찰가격:
+                \[
+                \text{입찰가격} = A + (P - A) \times 0.87745
+                \]
+            </li>
+        </ol>
+        <hr>
+        <h3>결론: 행정자치부와 조달청의 입찰가 계산 비교</h3>
+        <p>
+            - <strong>행정자치부 기준</strong>: 가장 가능성이 높은 예정가격은 <strong>기초가격의 99.75%</strong>로, 낙찰 하한율을 적용한 입찰가격 공식은
+            \[
+            \text{입찰가격} = A + (0.9975 \times \text{기초가격} - A) \times 0.87745
+            \]
+            입니다.
+        </p>
+        <p>
+            - <strong>조달청 기준</strong>: 가장 가능성이 높은 예정가격은 <strong>기초가격의 100%</strong>로, 낙찰 하한율을 적용한 입찰가격 공식은
+            \[
+            \text{입찰가격} = A + (\text{기초가격} - A) \times 0.87745
+            \]
+            입니다.
+        </p>
+        <p>이 공식들을 통해 <strong>행정자치부</strong>와 <strong>조달청</strong> 각각의 기준을 바탕으로 <strong>최적의 입찰가격</strong>을 산정할 수 있습니다.</p>
+    </div>
+
+    <script>
+        // 가격 포맷터
+        let formatter = new Intl.NumberFormat('ko-KR');
+
+        // 초기 값 설정
+        let G = parseInput(document.getElementById('gValue').value);
+        let A = parseInput(document.getElementById('aValue').value);
+        let agency = document.querySelector('input[name="agency"]:checked').value;
+        let pPercentage = parseFloat(document.getElementById('pPercentageSlider').value);
+
+        // 예정가격(P)의 기본값과 변동 범위 설정
+        let P_base = 0;
+        let P_min = 0;
+        let P_max = 0;
+
+        // 오류 메시지 요소
+        let gError = document.getElementById('gError');
+        let aError = document.getElementById('aError');
+        let pError = document.getElementById('pError');
+
+        // 입력값 파싱 함수
+        function parseInput(value) {
+            return parseFloat(value.replace(/,/g, ''));
+        }
+
+        // 입력값 포맷팅 함수
+        function formatInput(value) {
+            return formatter.format(value);
+        }
+
+        // 결과 업데이트 함수
+        function updateResult() {
+            // 입력값 검증
+            G = parseInput(document.getElementById('gValue').value);
+            A = parseInput(document.getElementById('aValue').value);
+            pPercentage = parseFloat(document.getElementById('pPercentageInput').value);
+
+            let isValid = true;
+
+            if (isNaN(G) || G <= 0) {
+                gError.textContent = '유효한 기초가격을 입력하세요.';
+                isValid = false;
+            } else {
+                gError.textContent = '';
+                document.getElementById('gValue').value = formatInput(G);
+            }
+
+            if (isNaN(A) || A <= 0) {
+                aError.textContent = '유효한 A 값을 입력하세요.';
+                isValid = false;
+            } else {
+                aError.textContent = '';
+                document.getElementById('aValue').value = formatInput(A);
+            }
+
+            agency = document.querySelector('input[name="agency"]:checked').value;
+
+            let min = parseFloat(document.getElementById('pPercentageSlider').min);
+            let max = parseFloat(document.getElementById('pPercentageSlider').max);
+
+            if (isNaN(pPercentage) || pPercentage < min || pPercentage > max) {
+                pError.textContent = `예정가격 변동 범위는 ${min}% 에서 ${max}% 입니다.`;
+                isValid = false;
+            } else {
+                pError.textContent = '';
+            }
+
+            if (!isValid) {
+                document.getElementById('bValue').textContent = '';
+                document.getElementById('bidDescription').textContent = '';
+                return;
+            }
+
+            // 기관에 따른 예정가격의 기본값 설정
+            if (agency === 'mois') {
+                P_base = 0.9975 * G; // 행정자치부: 99.75% * G
+            } else {
+                P_base = G; // 조달청: 100% * G
+            }
+
+            // 예정가격(P) 계산
+            let P = P_base * (1 + pPercentage / 100);
+
+            // 낙찰 하한율은 고정된 87.745%
+            let B = A + (P - A) * 0.87745;
+
+            document.getElementById('bValue').innerText = formatInput(Math.round(B)) + '원';
+
+            // 입력 필드와 슬라이더 동기화
+            document.getElementById('pPercentageInput').value = pPercentage.toFixed(3);
+            document.getElementById('pPercentageSlider').value = pPercentage.toFixed(3);
+
+            // 입찰 과정 설명 업데이트
+            let description = `
+                <h2>입찰 과정 설명</h2>
+                <p>기초가격: ${formatInput(Math.round(G))}원</p>
+                <p>A 값: ${formatInput(Math.round(A))}원</p>
+                <p>기관: ${agency === 'mois' ? '행정자치부' : '조달청'}</p>
+                <p>예정가격: ${formatInput(Math.round(P))}원</p>
+                <p>낙찰 하한율: 87.745%</p>
+                <p>계산된 입찰가격: ${formatInput(Math.round(B))}원</p>
+            `;
+            document.getElementById('bidDescription').innerHTML = description;
+        }
+
+        // 슬라이더 범위 업데이트 함수
+        function updateSliderRange() {
+            if (agency === 'mois') {
+                // 행정자치부: ±3%
+                document.getElementById('pPercentageSlider').min = -3;
+                document.getElementById('pPercentageSlider').max = 3;
+                document.getElementById('pPercentageInput').placeholder = '-3 ~ 3';
+            } else {
+                // 조달청: ±2%
+                document.getElementById('pPercentageSlider').min = -2;
+                document.getElementById('pPercentageSlider').max = 2;
+                document.getElementById('pPercentageInput').placeholder = '-2 ~ 2';
+            }
+        }
+
+        // 이벤트 리스너 추가
+        document.getElementById('gValue').addEventListener('input', () => {
+            updateResult();
+            updateChart();
+        });
+        document.getElementById('aValue').addEventListener('input', () => {
+            updateResult();
+            updateChart();
+        });
+        document.getElementsByName('agency').forEach((elem) => {
+            elem.addEventListener('change', () => {
+                agency = document.querySelector('input[name="agency"]:checked').value;
+                updateSliderRange();
+                updateResult();
+                createChart();
+            });
+        });
+        document.getElementById('pPercentageSlider').addEventListener('input', () => {
+            pPercentage = parseFloat(document.getElementById('pPercentageSlider').value);
+            document.getElementById('pPercentageInput').value = pPercentage.toFixed(3);
+            updateResult();
+            updateChart();
+        });
+        document.getElementById('pPercentageInput').addEventListener('input', () => {
+            let val = parseFloat(document.getElementById('pPercentageInput').value);
+            if (isNaN(val)) {
+                pError.textContent = '숫자를 입력하세요.';
+                return;
+            }
+            let min = parseFloat(document.getElementById('pPercentageSlider').min);
+            let max = parseFloat(document.getElementById('pPercentageSlider').max);
+            if (val < min) val = min;
+            if (val > max) val = max;
+            pPercentage = val;
+            document.getElementById('pPercentageSlider').value = pPercentage.toFixed(3);
+            updateResult();
+            updateChart();
+        });
+
+        // 정규분포 그래프 생성
+        let ctx = document.getElementById('myChart').getContext('2d');
+
+        // 정규분포 데이터 생성 함수
+        function generateNormalData(mean, stdDev, minX, maxX, numPoints) {
+            let data = [];
+            let step = (maxX - minX) / numPoints;
+            for (let x = minX; x <= maxX; x += step) {
+                let y = (1 / (stdDev * Math.sqrt(2 * Math.PI))) * Math.exp(-0.5 * Math.pow((x - mean) / stdDev, 2));
+                data.push({ x: x, y: y });
+            }
+            return data;
+        }
+
+        // 그래프 생성 함수
+        function createChart() {
+            let mean = 0; // 평균은 0%
+            let stdDev = agency === 'mois' ? 1 : 0.67; // 표준편차 설정
+            let minX = agency === 'mois' ? -3 : -2;
+            let maxX = agency === 'mois' ? 3 : 2;
+            let numPoints = 100;
+
+            let normalData = generateNormalData(mean, stdDev, minX, maxX, numPoints);
+
+            if (myChart) {
+                myChart.destroy();
+            }
+
+            myChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    datasets: [{
+                        label: '예정가격 변동 분포',
+                        data: normalData,
+                        fill: false,
+                        borderColor: '#007bff',
+                        pointRadius: 0,
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        x: {
+                            type: 'linear',
+                            position: 'bottom',
+                            title: {
+                                display: true,
+                                text: '예정가격 변동 (%)'
+                            },
+                            min: minX,
+                            max: maxX
+                        },
+                        y: {
+                            display: false
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        annotation: {
+                            annotations: {
+                                line1: {
+                                    type: 'line',
+                                    xMin: pPercentage,
+                                    xMax: pPercentage,
+                                    borderColor: 'red',
+                                    borderWidth: 2,
+                                    label: {
+                                        content: '현재 예정가격 변동',
+                                        enabled: true,
+                                        position: 'start'
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 그래프 업데이트 함수
+        function updateChart() {
+            let annotations = myChart.options.plugins.annotation.annotations;
+            annotations.line1.xMin = pPercentage;
+            annotations.line1.xMax = pPercentage;
+            myChart.update();
+        }
+
+        // 초기 그래프 생성 및 결과 업데이트
+        let myChart;
+        updateSliderRange();
+        updateResult();
+        createChart();
+
+ 
+    </script>
+</body>
+</html>
