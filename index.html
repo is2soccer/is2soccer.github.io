@@ -126,14 +126,30 @@
             position: fixed;
             right: 20px;
             bottom: 20px;
+            padding: 20px;
+            width: 260px; /* 컨테이너 너비 증가 */
+            background: rgba(255, 255, 255, 0.75); /* Glassmorphic 투명도 */
+            backdrop-filter: blur(10px); /* Glassmorphic 효과 */
+            border-radius: 15px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2); /* 그림자 효과 */
             text-align: center;
+            z-index: 1000;
+        }
+        .fixed-links p {
+            font-size: 24px; /* 텍스트 크기 2배 */
+            color: #555555;
+            margin: 0 0 15px 0;
+        }
+        .fixed-links .logo-links {
+            display: flex;
+            justify-content: space-between; /* 로고 간의 공간 확보 */
+            margin-top: 10px;
         }
         .fixed-links a {
-            display: block;
-            margin-bottom: 10px;
+            display: inline-block;
         }
         .fixed-links img {
-            width: 40px;
+            width: 70px; /* 로고 크기 약간 축소 */
             height: auto;
         }
     </style>
@@ -173,15 +189,18 @@
 
     <!-- 오른쪽 아래 고정 링크 섹션 -->
     <div class="fixed-links">
-        <a href="https://wellgadesign.com/" target="_blank">
-            <img src="is2soccer.github.io/wellga_logo.jpg" alt="Wellga Design Logo">
-        </a>
-        <a href="https://blog.naver.com/wellgadesign" target="_blank">
-            <img src="is2soccer.github.io/naver_blog.png" alt="Naver Blog Logo">
-        </a>
-        <a href="https://www.instagram.com/wellgadesign" target="_blank">
-            <img src="is2soccer.github.io/instagram.png" alt="Instagram Logo">
-        </a>
+        <p>제작: 웰가디자인</p>
+        <div class="logo-links">
+            <a href="https://wellgadesign.com/" target="_blank">
+                <img src="https://is2soccer.github.io/wellga_logo.jpg" alt="Wellga Design Logo">
+            </a>
+            <a href="https://blog.naver.com/wellgadesign" target="_blank">
+                <img src="https://is2soccer.github.io/naver_blog.png" alt="Naver Blog Logo">
+            </a>
+            <a href="https://www.instagram.com/wellgadesign" target="_blank">
+                <img src="https://is2soccer.github.io/instagram.png" alt="Instagram Logo">
+            </a>
+        </div>
     </div>
 
     <!-- 추가 내용 -->
@@ -552,8 +571,6 @@
         updateSliderRange();
         updateResult();
         createChart();
-
- 
     </script>
 </body>
 </html>
