@@ -524,16 +524,22 @@
 
             // 입찰 과정 설명 업데이트
             let description = `
-                <h2>입찰 과정 설명</h2>
+                <h2>입찰 과정 설명 <button id="copyButton" style="font-size: 0.7em; padding: 3px 5px; margin-left: 8px; cursor: pointer;">복사</button></h2>
                 <p>기초가격: ${formatInput(Math.round(G))}원</p>
                 <p>A 값: ${formatInput(Math.round(A))}원</p>
                 <p>기관: ${agency === 'mois' ? '행정자치부' : '조달청'}</p>
+                <p>예정가격 변동: ${pPercentage.toFixed(3)}%</p>
                 <p>예정가격: ${formatInput(Math.round(P))}원</p>
-                <p>예정가격 변동: ${pPercentage.toFixed(3)}%</p> <!-- 추가된 부분 -->
                 <p>낙찰 하한율: 87.745%</p>
                 <p>계산된 입찰가격: ${formatInput(Math.round(B))}원</p>
             `;
             document.getElementById('bidDescription').innerHTML = description;
+
+            // 복사 버튼 기능 추가
+            document.getElementById('copyButton').addEventListener('click', () => {
+                const bidDescription = document.getElementById('bidDescription').innerText;
+                navigator.clipboard.writeText(bidDescription);
+            });
         }
 
         // 슬라이더 범위 업데이트 함수
