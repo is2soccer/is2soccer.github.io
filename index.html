@@ -529,6 +529,7 @@
                 <p>A 값: ${formatInput(Math.round(A))}원</p>
                 <p>기관: ${agency === 'mois' ? '행정자치부' : '조달청'}</p>
                 <p>예정가격: ${formatInput(Math.round(P))}원</p>
+                <p>예정가격 변동: ${pPercentage.toFixed(3)}%</p> <!-- 추가된 부분 -->
                 <p>낙찰 하한율: 87.745%</p>
                 <p>계산된 입찰가격: ${formatInput(Math.round(B))}원</p>
             `;
