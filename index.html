@@ -240,7 +240,7 @@
             justify-content: space-between;
             margin-bottom: 20px;
         }
-        </style>
+    </style>
 </head>
 <body>
     <div class="container">
@@ -265,11 +265,13 @@
         </div>
         <div class="input-group">
             <label for="pPercentageInput">예정가격 변동 (%): <span id="pError" class="error-message"></span></label>
-            <input type="number" id="pPercentageInput" step="0.001" value="0" placeholder="예정가격 변동 비율을 입력하세요">
+            <!-- step을 5자리까지 허용하도록 변경 -->
+            <input type="number" id="pPercentageInput" step="0.00001" value="0" placeholder="예정가격 변동 비율을 입력하세요">
         </div>
         <div class="input-group">
             <label id="priceLabel">예정가격 변동 조정:</label>
-            <input type="range" id="pPercentageSlider" step="0.001" value="0">
+            <!-- step을 5자리까지 허용하도록 변경 -->
+            <input type="range" id="pPercentageSlider" step="0.00001" value="0">
         </div>
         <div class="input-group">
             <canvas id="myChart"></canvas>
@@ -312,7 +314,6 @@
         <h5>구체적인 구간</h5>
         <p>행정자치부에서 복수예비가격은 아래와 같은 범위에서 결정됩니다:</p>
         <ul>
-            <!-- 구간 내용 -->
             <li><strong>1구간</strong>: 97.000000% ~ 97.375000%</li>
             <li><strong>2구간</strong>: 97.3750001% ~ 97.750000%</li>
             <li><strong>3구간</strong>: 97.7500001% ~ 98.125000%</li>
@@ -358,7 +359,6 @@
         <h5>구체적인 구간</h5>
         <p>조달청의 복수예비가격은 아래와 같은 범위에서 결정됩니다:</p>
         <ul>
-            <!-- 구간 내용 -->
             <li><strong>1구간</strong>: 102.000% ~ 101.735%</li>
             <li><strong>2구간</strong>: 101.734% ~ 101.469%</li>
             <li><strong>3구간</strong>: 101.468% ~ 101.202%</li>
@@ -421,7 +421,7 @@
                 <ol>
                     <li>입찰 공고서에서 제공된 <strong>기초가격</strong>과 <strong>A 값</strong>을 입력합니다.</li>
                     <li>기관 선택에서 <strong>행정자치부</strong> 또는 <strong>조달청</strong> 중 하나을 선택합니다.</li>
-                    <li>자신이 원하는 <strong>예정가격 변동 (%)</strong>을 슬라이더로 조정하거나 직접 입력합니다. <strong>예정가격 변동</strong> 값이 0%에 가까울수록 낙찰 확률은 높아지지만, 다른 참여자들도 그 가격에 가깝게 투찰할 가능성이 큽니다. 따라서 적절한 변동 비율을 설정하는 것이 중요합니다.이 변동 값은 완전히 랜덤하게 결정되므로, 미리 알 수 없습니다..</li>
+                    <li>자신이 원하는 <strong>예정가격 변동 (%)</strong>을 슬라이더로 조정하거나 직접 입력합니다. <strong>예정가격 변동</strong> 값이 0%에 가까울수록 낙찰 확률은 높아지지만, 다른 참여자들도 그 가격에 가깝게 투찰할 가능성이 큽니다. 따라서 적절한 변동 비율을 설정하는 것이 중요합니다. 이 변동 값은 완전히 랜덤하게 결정되므로, 미리 알 수 없습니다.</li>
                     <li>그럼에도 불구하고, 이 계산기를 이용하는 것이 아무 지식 없이 투찰을 하는 참여자보다는 낙찰 확률을 높여 줄 수 있습니다.</li>
                     <li>계산된 입찰가격과 입찰 과정 설명을 확인합니다.</li>
                 </ol>
@@ -477,8 +477,8 @@
                 document.getElementById('gValue').value = formatInput(G);
             }
 
-            if (isNaN(A) || A <= 0) {
-                aError.textContent = '유효한 A 값을 입력하세요.';
+            if (isNaN(A) || A < 0) {
+                aError.textContent = '유효한 A 값을 입력하세요. (0원 이상)';
                 isValid = false;
             } else {
                 aError.textContent = '';
@@ -513,14 +513,21 @@
             // 예정가격(P) 계산
             let P = P_base * (1 + pPercentage / 100);
 
-            // 낙찰 하한율은 고정된 87.745%
-            let B = A + (P - A) * 0.87745;
+            // A 값에 따른 분기 처리
+            // A가 0원이면 B = 예정가격(P) × 0.87745
+            // A가 0보다 크면 기존 공식 적용
+            let B = 0;
+            if (A === 0) {
+                B = P * 0.87745;
+            } else {
+                B = A + (P - A) * 0.87745;
+            }
 
             document.getElementById('bValue').innerText = formatInput(Math.round(B)) + '원';
 
             // 입력 필드와 슬라이더 동기화
-            document.getElementById('pPercentageInput').value = pPercentage.toFixed(3);
-            document.getElementById('pPercentageSlider').value = pPercentage.toFixed(3);
+            document.getElementById('pPercentageInput').value = pPercentage.toFixed(5);
+            document.getElementById('pPercentageSlider').value = pPercentage.toFixed(5);
 
             // 입찰 과정 설명 업데이트
             let description = `
@@ -528,7 +535,7 @@
                 <p>기초가격: ${formatInput(Math.round(G))}원</p>
                 <p>A 값: ${formatInput(Math.round(A))}원</p>
                 <p>기관: ${agency === 'mois' ? '행정자치부' : '조달청'}</p>
-                <p>예정가격 변동: ${pPercentage.toFixed(3)}%</p>
+                <p>예정가격 변동: ${pPercentage.toFixed(5)}%</p>
                 <p>예정가격: ${formatInput(Math.round(P))}원</p>
                 <p>낙찰 하한율: 87.745%</p>
                 <p>계산된 입찰가격: ${formatInput(Math.round(B))}원</p>
@@ -576,7 +583,7 @@
         });
         document.getElementById('pPercentageSlider').addEventListener('input', () => {
             pPercentage = parseFloat(document.getElementById('pPercentageSlider').value);
-            document.getElementById('pPercentageInput').value = pPercentage.toFixed(3);
+            document.getElementById('pPercentageInput').value = pPercentage.toFixed(5);
             updateResult();
             updateChart();
         });
@@ -591,7 +598,7 @@
             if (val < min) val = min;
             if (val > max) val = max;
             pPercentage = val;
-            document.getElementById('pPercentageSlider').value = pPercentage.toFixed(3);
+            document.getElementById('pPercentageSlider').value = pPercentage.toFixed(5);
             updateResult();
             updateChart();
         });
