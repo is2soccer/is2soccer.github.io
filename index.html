@@ -106,19 +106,19 @@
             font-size: 0.9em;
             margin-top: 5px;
         }
-        /* 추가 내용 스타일 */
-        .additional-content {
-            margin-top: 50px;
-            padding: 20px;
-            background-color: #ffffff;
-            border-radius: 8px;
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
         }
-        .additional-content h2 {
-            color: #333333;
+        table th, table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
         }
-        .additional-content p {
-            color: #555555;
-            line-height: 1.6;
+        table th {
+            background-color: #f4f4f4;
+            font-weight: bold;
         }
 
         /* 오른쪽 아래 고정 링크 섹션 스타일 */
@@ -277,7 +277,32 @@
             <canvas id="myChart"></canvas>
         </div>
         <div id="result">입찰가격: <span id="bValue"></span></div>
-        <div class="description" id="bidDescription"></div>
+        <div class="description" id="bidDescription">
+            <table>
+                <thead>
+                    <tr>
+                        <th>기초가격</th>
+                        <th>A 값</th>
+                        <th>기관</th>
+                        <th>예정가격 변동 (%)</th>
+                        <th>예정가격</th>
+                        <th>낙찰 하한율</th>
+                        <th>계산된 입찰가격</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td id="gValueCell"></td>
+                        <td id="aValueCell"></td>
+                        <td id="agencyCell"></td>
+                        <td id="pPercentageCell"></td>
+                        <td id="pValueCell"></td>
+                        <td>87.745%</td>
+                        <td id="bValueCell"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <!-- 오른쪽 아래 고정 링크 섹션 -->
@@ -530,17 +555,14 @@
             document.getElementById('pPercentageSlider').value = pPercentage.toFixed(5);
 
             // 입찰 과정 설명 업데이트
-            let description = `
-                <h2>입찰 과정 설명 <button id="copyButton" style="font-size: 0.7em; padding: 3px 5px; margin-left: 8px; cursor: pointer;">복사</button></h2>
-                <p>기초가격: ${formatInput(Math.round(G))}원</p>
-                <p>A 값: ${formatInput(Math.round(A))}원</p>
-                <p>기관: ${agency === 'mois' ? '행정자치부' : '조달청'}</p>
-                <p>예정가격 변동: ${pPercentage.toFixed(5)}%</p>
-                <p>예정가격: ${formatInput(Math.round(P))}원</p>
-                <p>낙찰 하한율: 87.745%</p>
-                <p>계산된 입찰가격: ${formatInput(Math.round(B))}원</p>
-            `;
-            document.getElementById('bidDescription').innerHTML = description;
+            document.getElementById('gValueCell').textContent = formatInput(G) + '원';
+            document.getElementById('aValueCell').textContent = formatInput(A) + '원';
+            document.getElementById('agencyCell').textContent = agency === 'mois' ? '행정자치부' : '조달청';
+            document.getElementById('pPercentageCell').textContent = pPercentage.toFixed(5) + '%';
+            document.getElementById('pValueCell').textContent = formatInput(P) + '원';
+            document.getElementById('bValueCell').textContent = formatInput(B) + '원';
+
+            document.getElementById('bValue').textContent = formatInput(B) + '원';
 
             // 복사 버튼 기능 추가
             document.getElementById('copyButton').addEventListener('click', () => {
