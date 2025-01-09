@@ -278,7 +278,7 @@
         </div>
         <div id="result">입찰가격: <span id="bValue"></span></div>
         <div class="description" id="bidDescription"></div>
-        <div class="description" id="bidTable">
+        <div class="bidTable">
             <table>
                 <thead>
                     <tr>
@@ -575,7 +575,7 @@
             document.getElementById('agencyCell').textContent = agency === 'mois' ? '행정자치부' : '조달청';
             document.getElementById('pPercentageCell').innerHTML = `<p>${pPercentage.toFixed(5)}%</p>`;
             document.getElementById('pValueCell').innerHTML = `<p>${formatInput(Math.round(P))}원</p>`;
-            document.getElementById('bValueCell').innerHTML = `<p>계산된 입찰가격: ${formatInput(Math.round(B))}원</p>';
+            document.getElementById('bValueCell').innerHTML = `<p>${formatInput(Math.round(B))}원</p>';
 
             // 복사 버튼 기능 추가
             document.getElementById('copyButton').addEventListener('click', () => {
