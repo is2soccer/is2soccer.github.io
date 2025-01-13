@@ -539,6 +539,28 @@
                 <p>예정가격: ${formatInput(Math.round(P))}원</p>
                 <p>낙찰 하한율: 87.745%</p>
                 <p>계산된 입찰가격: ${formatInput(Math.round(B))}원</p>
+
+                <!-- 아래부터 추가된 테이블 -->
+                <table style="border-collapse: collapse; width: 100%; margin-top: 20px;">
+                    <tr style="border-bottom: 1px solid #ccc;">
+                        <th style="padding: 8px;">기초가격</th>
+                        <th style="padding: 8px;">A 값</th>
+                        <th style="padding: 8px;">기관</th>
+                        <th style="padding: 8px;">예정가격 변동</th>
+                        <th style="padding: 8px;">예정가격</th>
+                        <th style="padding: 8px;">낙찰 하한율</th>
+                        <th style="padding: 8px;">계산된 입찰가격</th>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px;">${formatInput(Math.round(G))}원</td>
+                        <td style="padding: 8px;">${formatInput(Math.round(A))}원</td>
+                        <td style="padding: 8px;">${agency === 'mois' ? '행정자치부' : '조달청'}</td>
+                        <td style="padding: 8px;">${pPercentage.toFixed(5)}%</td>
+                        <td style="padding: 8px;">${formatInput(Math.round(P))}원</td>
+                        <td style="padding: 8px;">87.745%</td>
+                        <td style="padding: 8px;">${formatInput(Math.round(B))}원</td>
+                    </tr>
+                </table>
             `;
             document.getElementById('bidDescription').innerHTML = description;
 
