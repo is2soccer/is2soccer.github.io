@@ -14,16 +14,30 @@
       background-color: #fafafa;
       color: #333;
     }
+    /* 웹툰: 화면 가로 100% 풀블리드 */
+    .webtoon {
+      margin: 0 calc(50% - 50vw);
+    }
+    .webtoon img {
+      display: block;
+      width: 100vw;
+      height: auto;
+    }
     .container {
       max-width: 600px;
       margin: 0 auto;
     }
-    p {
-      margin-bottom: 1.2em;
-    }
+    p { margin-bottom: 1.2em; }
   </style>
 </head>
 <body>
+  <!-- 웹툰 영역 -->
+  <div class="webtoon">
+    <img src="wd1.webp" alt="우리의 이야기 웹툰 1화" loading="lazy">
+    <img src="wd2.webp" alt="우리의 이야기 웹툰 2화" loading="lazy">
+  </div>
+
+  <!-- 본문 -->
   <div class="container">
     <p>처음 만남은 라켓에서 시작되었다.</p>
     <p>승환이는 더에이스테니스 클럽에서 코트를 누비며 샷을 이어가고 있었다. 그날 지은이는 게스트로 잠시 들렀고, 두 사람은 몇 번 인사를 나누는 사이가 되었다. 그러던 중 우연히 가까워질 기회가 찾아왔다.</p>
